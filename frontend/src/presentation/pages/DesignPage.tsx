@@ -1,6 +1,6 @@
 import type { CanvasUseCases } from "@/application/canvas"
 import type { GuiElementUseCases } from "@/application/guiElement"
-import Canvas from "@/presentation/03_organisms/Canvas"
+import Canvas from "@/presentation/features/Canvas"
 import useEditor from "@/presentation/hooks/useEditor"
 
 type Props = {

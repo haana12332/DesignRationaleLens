@@ -15,4 +15,4 @@ ENV USE_BUILTIN_RIPGREP=0
 RUN npm install -g @anthropic-ai/claude-code
 
 EXPOSE 5173
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["sh", "-c", "npm install && npm run dev -- --host 0.0.0.0"]

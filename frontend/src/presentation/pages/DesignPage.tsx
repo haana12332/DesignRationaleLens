@@ -4,14 +4,51 @@ import type { ChangeEvent } from "react"
 import type { CanvasUseCases } from "@/application/canvas"
 import type { GuiElementUseCases } from "@/application/guiElement"
 import type { LayerTreeUseCases } from "@/application/layerTree"
+import type { LayerNode, ParseResult } from "@/domain/layerTree"
+import { LAYER_LABEL_MAP } from "@/domain/layerTree"
 import Canvas from "@/presentation/features/Canvas"
 import useEditor from "@/presentation/hooks/useEditor"
-import { logLayerTreeResult } from "@/presentation/hooks/useImport"
 
 type Props = {
     canvasUseCases: CanvasUseCases
     guiElementUseCases: GuiElementUseCases
     layerTreeUseCases: LayerTreeUseCases
+}
+
+function logLayerTreeResult(result: ParseResult): void {
+    if (result.ok) {
+        const count = (layer: LayerNode["layer"]) => result.nodes.filter((n) => n.layer === layer).length
+        console.group("[SVG Import] ✅ 成功")
+        console.log(
+            `${LAYER_LABEL_MAP.page}×${count("page")}  ` +
+            `${LAYER_LABEL_MAP.template}×${count("template")}  ` +
+            `${LAYER_LABEL_MAP.organism}×${count("organism")}  ` +
+            `${LAYER_LABEL_MAP.molecule}×${count("molecule")}  ` +
+            `${LAYER_LABEL_MAP.atom}×${count("atom")}`,
+        )
+        console.log("ノード一覧:")
+        for (const node of result.nodes) {
+            let depth = 0
+            let cur: LayerNode | undefined = node
+            while (cur?.parentId) {
+                depth++
+                cur = result.nodes.find((n) => n.id === cur!.parentId)
+            }
+            const absorbed = node.absorbedIds.length > 0 ? ` [吸収: ${node.absorbedIds.join(", ")}]` : ""
+            console.log(`${"  ".repeat(depth)}${LAYER_LABEL_MAP[node.layer]} ${node.figmaId}${absorbed}`)
+        }
+        console.groupEnd()
+    } else {
+        console.group("[SVG Import] ❌ エラー")
+        for (const error of result.errors) {
+            console.group(`${error.code}`)
+            console.log("場所:", error.path)
+            console.log("内容:", error.message)
+            console.log("直し方:", error.fix)
+            console.groupEnd()
+        }
+        console.groupEnd()
+    }
 }
 
 /** 設計ページ（/design/:verification_id）。インポートした GUI 成果物を配置する無限キャンバス */

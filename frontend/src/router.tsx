@@ -12,7 +12,7 @@ export const router = createBrowserRouter([
     { path: ROUTES.home, element: <HomePage /> },
     {
         path: ROUTES.design,
-        element: <DesignPage canvasUseCases={canvasUseCases} guiElementUseCases={guiElementUseCases} />,
+        element: <DesignPage canvasUseCases={canvasUseCases} guiElementUseCases={guiElementUseCases} layerTreeUseCases={layerTreeUseCases} />,
     },
     { path: ROUTES.requirements, element: <RequirementsPage /> },
     {

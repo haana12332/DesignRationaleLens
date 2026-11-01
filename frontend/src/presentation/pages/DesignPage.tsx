@@ -3,16 +3,19 @@ import type { ChangeEvent } from "react"
 
 import type { CanvasUseCases } from "@/application/canvas"
 import type { GuiElementUseCases } from "@/application/guiElement"
+import type { LayerTreeUseCases } from "@/application/layerTree"
 import Canvas from "@/presentation/features/Canvas"
 import useEditor from "@/presentation/hooks/useEditor"
+import { logLayerTreeResult } from "@/presentation/hooks/useImport"
 
 type Props = {
     canvasUseCases: CanvasUseCases
     guiElementUseCases: GuiElementUseCases
+    layerTreeUseCases: LayerTreeUseCases
 }
 
 /** 設計ページ（/design/:verification_id）。インポートした GUI 成果物を配置する無限キャンバス */
-export function DesignPage({ canvasUseCases, guiElementUseCases }: Props) {
+export function DesignPage({ canvasUseCases, guiElementUseCases, layerTreeUseCases }: Props) {
     const editor = useEditor(canvasUseCases, guiElementUseCases)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -29,6 +32,7 @@ export function DesignPage({ canvasUseCases, guiElementUseCases }: Props) {
             const text = e.target?.result
             if (typeof text === "string") {
                 editor.importSvg(text)
+                logLayerTreeResult(layerTreeUseCases.importLayerTree(text))
             }
         }
         reader.readAsText(file)

@@ -22,22 +22,27 @@ function useImport(layerTreeUseCases: LayerTreeUseCases) {
         const parsed = layerTreeUseCases.importLayerTree(svgText)
         setResult(parsed)
 
-        if (parsed.ok) {
-            logSuccess(parsed.nodes)
-        } else {
-            console.group('[SVG Import] ❌ エラー')
-            for (const error of parsed.errors) {
-                console.group(`${error.code}`)
-                console.log('場所:', error.path)
-                console.log('内容:', error.message)
-                console.log('直し方:', error.fix)
-                console.groupEnd()
-            }
-            console.groupEnd()
-        }
+        logLayerTreeResult(parsed)
     }, [svgText, layerTreeUseCases])
 
     return { svgText, setSvgText, result }
+}
+
+/** パース結果をブラウザコンソールに出力する。DesignPage など他の場所からも呼べる */
+export function logLayerTreeResult(result: ParseResult): void {
+    if (result.ok) {
+        logSuccess(result.nodes)
+    } else {
+        console.group('[SVG Import] ❌ エラー')
+        for (const error of result.errors) {
+            console.group(`${error.code}`)
+            console.log('場所:', error.path)
+            console.log('内容:', error.message)
+            console.log('直し方:', error.fix)
+            console.groupEnd()
+        }
+        console.groupEnd()
+    }
 }
 
 function logSuccess(nodes: LayerNode[]): void {

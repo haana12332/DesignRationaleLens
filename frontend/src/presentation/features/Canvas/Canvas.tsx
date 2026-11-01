@@ -4,6 +4,7 @@ import type { PointerEvent as ReactPointerEvent } from "react"
 import type { Offset, Point, Viewport } from "@/domain/canvas"
 import { screenToWorld, worldToScreen } from "@/domain/canvas"
 import type { GuiElement } from "@/domain/guiElement"
+import { findElementAt } from "@/domain/guiElement"
 import * as styles from "./Canvas.css"
 
 type Props = {
@@ -14,21 +15,33 @@ type Props = {
     onZoom: (screenPoint: Point, factor: number) => void
     /** クリックした位置（キャンバス座標）を知らせる */
     onSelectAt: (point: Point) => void
+    /** 要素をドラッグで移動したときに、id とワールド座標でのデルタを親に知らせる */
+    onMoveElement: (id: string, dx: number, dy: number) => void
 }
 
-/** これ以上動いたらクリックではなくドラッグ（パン）とみなす（px） */
+/** これ以上動いたらクリックではなくドラッグとみなす（px） */
 const CLICK_TOLERANCE = 3
 const GRID_SIZE = 20
 
 /**
+ * ドラッグ状態。
+ * - canvas: キャンバス全体のパン
+ * - element: 個別の要素を移動
+ */
+type DragState =
+    | { mode: "canvas"; start: Point; last: Point; moved: boolean }
+    | { mode: "element"; id: string; start: Point; last: Point; moved: boolean }
+
+/**
  * 無限キャンバス。
- * - ドラッグ / ホイールでパン、Ctrl・⌘＋ホイール（トラックパッドのピンチ）でズーム
- * - クリックで要素を選択（何もない所なら選択解除）
+ * - 要素の上でドラッグ → 要素を移動
+ * - 背景でドラッグ / ホイール → パン、Ctrl+ホイール → ズーム
+ * - クリック → 要素を選択（何もない所なら選択解除）
  * 状態は持たず、操作があったら props のコールバックで親に知らせるだけ。
  */
-function Canvas({ viewport, elements, selectedId, onPan, onZoom, onSelectAt }: Props) {
+function Canvas({ viewport, elements, selectedId, onPan, onZoom, onSelectAt, onMoveElement }: Props) {
     const rootRef = useRef<HTMLDivElement>(null)
-    const dragRef = useRef<{ start: Point; last: Point; moved: boolean } | null>(null)
+    const dragRef = useRef<DragState | null>(null)
 
     // ホイールのリスナーからも最新のコールバックを使えるようにする
     const latest = useRef({ onPan, onZoom })
@@ -64,7 +77,20 @@ function Canvas({ viewport, elements, selectedId, onPan, onZoom, onSelectAt }: P
         if (event.button !== 0 && event.button !== 1) return
         event.currentTarget.setPointerCapture(event.pointerId)
         const screen = toScreen(event)
-        dragRef.current = { start: screen, last: screen, moved: false }
+
+        // 中ボタンは常にキャンバスパン
+        if (event.button === 1) {
+            dragRef.current = { mode: "canvas", start: screen, last: screen, moved: false }
+            return
+        }
+
+        // 左ボタン: クリック位置にある要素をヒットテストし、あれば要素ドラッグ
+        const world = screenToWorld(screen, viewport)
+        const hit = findElementAt(elements, world)
+
+        dragRef.current = hit
+            ? { mode: "element", id: hit.id, start: screen, last: screen, moved: false }
+            : { mode: "canvas", start: screen, last: screen, moved: false }
     }
 
     function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
@@ -73,7 +99,17 @@ function Canvas({ viewport, elements, selectedId, onPan, onZoom, onSelectAt }: P
         const screen = toScreen(event)
         const distance = Math.hypot(screen.x - drag.start.x, screen.y - drag.start.y)
         if (!drag.moved && distance < CLICK_TOLERANCE) return
-        onPan({ x: screen.x - drag.last.x, y: screen.y - drag.last.y })
+
+        const dx = screen.x - drag.last.x
+        const dy = screen.y - drag.last.y
+
+        if (drag.mode === "element") {
+            // スクリーン座標のデルタをワールド座標に変換して親に伝える
+            onMoveElement(drag.id, dx / viewport.zoom, dy / viewport.zoom)
+        } else {
+            onPan({ x: dx, y: dy })
+        }
+
         dragRef.current = { ...drag, last: screen, moved: true }
     }
 
@@ -109,17 +145,32 @@ function Canvas({ viewport, elements, selectedId, onPan, onZoom, onSelectAt }: P
             {/* 要素はキャンバス座標のまま描き、表示範囲の変換は親の <g> 1つでまとめて掛ける */}
             <svg className={styles.svg}>
                 <g transform={`translate(${viewport.x} ${viewport.y}) scale(${viewport.zoom})`}>
-                    {elements.map((element) => (
-                        <rect
-                            key={element.id}
-                            className={styles.element}
-                            x={element.x}
-                            y={element.y}
-                            width={element.width}
-                            height={element.height}
-                            vectorEffect="non-scaling-stroke"
-                        />
-                    ))}
+                    {elements.map((element) =>
+                        element.svgContent ? (
+                            // SVG 成果物: data URL で <image> として貼り込む（ベクター品質を維持）
+                            <image
+                                key={element.id}
+                                x={element.x}
+                                y={element.y}
+                                width={element.width}
+                                height={element.height}
+                                href={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(element.svgContent)}`}
+                                style={{ cursor: "move" }}
+                            />
+                        ) : (
+                            // プレースホルダー矩形
+                            <rect
+                                key={element.id}
+                                className={styles.element}
+                                x={element.x}
+                                y={element.y}
+                                width={element.width}
+                                height={element.height}
+                                vectorEffect="non-scaling-stroke"
+                                style={{ cursor: "move" }}
+                            />
+                        ),
+                    )}
                 </g>
             </svg>
 

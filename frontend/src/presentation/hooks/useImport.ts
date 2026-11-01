@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { LayerTreeUseCases } from '@/application/layerTree'
 import type { LayerNode, ParseResult } from '@/domain/layerTree'
@@ -12,8 +12,12 @@ function useImport(layerTreeUseCases: LayerTreeUseCases) {
     const [svgText, setSvgText] = useState('')
     const [result, setResult] = useState<ParseResult | null>(null)
 
-    function handleImport() {
-        if (!svgText.trim()) return
+    // SVG テキストが変わったら即座にパース・コンソール出力する
+    useEffect(() => {
+        if (!svgText.trim()) {
+            setResult(null)
+            return
+        }
 
         const parsed = layerTreeUseCases.importLayerTree(svgText)
         setResult(parsed)
@@ -31,9 +35,9 @@ function useImport(layerTreeUseCases: LayerTreeUseCases) {
             }
             console.groupEnd()
         }
-    }
+    }, [svgText, layerTreeUseCases])
 
-    return { svgText, setSvgText, result, handleImport }
+    return { svgText, setSvgText, result }
 }
 
 function logSuccess(nodes: LayerNode[]): void {

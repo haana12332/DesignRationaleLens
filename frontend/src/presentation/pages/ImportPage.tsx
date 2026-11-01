@@ -7,7 +7,7 @@ type Props = {
 
 /** SVG インポートページ（/import/:verification_id）。結果はブラウザコンソールに出力する */
 export function ImportPage({ layerTreeUseCases }: Props) {
-    const { svgText, setSvgText, result, handleImport } = useImport(layerTreeUseCases)
+    const { svgText, setSvgText, result } = useImport(layerTreeUseCases)
 
     return (
         <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -15,17 +15,10 @@ export function ImportPage({ layerTreeUseCases }: Props) {
             <textarea
                 value={svgText}
                 onChange={(e) => setSvgText(e.target.value)}
-                placeholder="Figma からコピーした SVG を貼り付けてください"
+                placeholder="Figma からコピーした SVG を貼り付けてください（貼り付けた瞬間にコンソールへ出力されます）"
                 rows={10}
                 style={{ fontFamily: 'monospace', fontSize: 12, resize: 'vertical' }}
             />
-            <button
-                onClick={handleImport}
-                disabled={!svgText.trim()}
-                style={{ alignSelf: 'flex-start', padding: '6px 16px', cursor: 'pointer' }}
-            >
-                インポート
-            </button>
             {result && (
                 <p style={{ fontSize: 13, color: result.ok ? '#0d7e0d' : '#c62828' }}>
                     {result.ok

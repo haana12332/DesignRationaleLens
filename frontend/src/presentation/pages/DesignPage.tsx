@@ -1,21 +1,27 @@
-import { Link, useParams } from "react-router"
+import type { CanvasUseCases } from "@/application/canvas"
+import type { GuiElementUseCases } from "@/application/guiElement"
+import Canvas from "@/presentation/features/Canvas"
+import useEditor from "@/presentation/hooks/useEditor"
 
-import { paths } from "../../routes"
+type Props = {
+    canvasUseCases: CanvasUseCases
+    guiElementUseCases: GuiElementUseCases
+}
 
-export function DesignPage() {
-    // /design/:verification_id の値を受け取る（string | undefined）
-    const { verification_id } = useParams<{ verification_id: string }>()
-
-    if (!verification_id) return <p>verification_id がありません</p>
+/** 設計ページ（/design/:verification_id）。インポートした GUI 成果物を配置する無限キャンバス */
+export function DesignPage({ canvasUseCases, guiElementUseCases }: Props) {
+    const editor = useEditor(canvasUseCases, guiElementUseCases)
 
     return (
-        <div>
-            <h1>設計</h1>
-            <p>verification_id: {verification_id}</p>
-
-            <Link to={paths.requirements(verification_id)}>同じ ID の要件へ</Link>
-            {" | "}
-            <Link to={paths.home()}>ホームへ戻る</Link>
+        <div style={{ position: "relative", height: "100%" }}>
+            <Canvas
+                viewport={editor.viewport}
+                elements={editor.elements}
+                selectedId={editor.selectedId}
+                onPan={editor.pan}
+                onZoom={editor.zoomAt}
+                onSelectAt={editor.selectAt}
+            />
         </div>
     )
 }

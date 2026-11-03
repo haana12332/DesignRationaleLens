@@ -190,12 +190,10 @@ function Canvas({
             if (hitId !== null) {
                 // 許容レイヤーにヒット → 1段階掘り下げて選択
                 onSelectLayerNode(hitId)
-            } else if (selectedLayerNodeId !== null) {
-                // ヒットなし・かつ選択中 → 1段階上（親）に戻る
-                const currentNode = layerNodes.find((n) => n.id === selectedLayerNodeId)
-                onSelectLayerNode(currentNode?.parentId ?? null)
+            } else {
+                // 許容レイヤー外をクリック → 選択を完全にリセット
+                onSelectLayerNode(null)
             }
-            // 未選択 + ヒットなし: 何もしない（P_ のない空白をクリックした場合）
         }
     }
 
@@ -282,7 +280,7 @@ function Canvas({
                                 y={element.y + local.y}
                                 width={local.width}
                                 height={local.height}
-                                fill={isSelected ? "rgba(13, 153, 255, 0.10)" : "transparent"}
+                                fill="none"
                                 stroke={isSelected ? "#0d99ff" : "#74c0fc"}
                                 strokeWidth={isSelected ? 2 : 1}
                                 vectorEffect="non-scaling-stroke"

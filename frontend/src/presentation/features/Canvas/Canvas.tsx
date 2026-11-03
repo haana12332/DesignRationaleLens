@@ -26,6 +26,12 @@ type Props = {
 
 const CLICK_TOLERANCE = 3
 const GRID_SIZE = 20
+/** スクリーン座標でのコーナーハンドルサイズ (px) */
+const HANDLE_SIZE = 6
+/** スマートガイドの延長余白 (world coords) */
+const GUIDE_PADDING = 20
+/** スマートガイドのエッジ一致許容誤差 (world coords) */
+const GUIDE_TOLERANCE = 0.5
 
 type DragState =
     | { mode: "canvas"; start: Point; last: Point; moved: boolean }
@@ -273,6 +279,105 @@ function Canvas({
                             />
                         )
                     })}
+
+                    {/* 選択オーバーレイ: バウンディングボックス・コーナーハンドル・スマートガイド */}
+                    {(() => {
+                        if (!selectedLayerNodeId) return null
+                        const selNode = layerNodes.find((n) => n.id === selectedLayerNodeId)
+                        if (!selNode) return null
+                        const selLocal = layerBBoxes.get(selNode.id)
+                        if (!selLocal) return null
+                        const selEl = elements.find((e) => e.id === selNode.svgId)
+                        if (!selEl) return null
+
+                        const wx = selEl.x + selLocal.x
+                        const wy = selEl.y + selLocal.y
+                        const ww = selLocal.width
+                        const wh = selLocal.height
+
+                        // ハンドルサイズは zoom に反比例させてスクリーン上で一定サイズにする
+                        const hs = HANDLE_SIZE / viewport.zoom
+                        const hh = hs / 2
+
+                        // スマートガイド: 同じ親の兄弟ノードとエッジが一致する位置に破線を引く
+                        const guides: { axis: "h" | "v"; pos: number; from: number; to: number }[] = []
+                        const siblings = layerNodes.filter(
+                            (n) => n.parentId === selNode.parentId && n.id !== selNode.id,
+                        )
+                        for (const sib of siblings) {
+                            const sibLocal = layerBBoxes.get(sib.id)
+                            if (!sibLocal) continue
+                            const sibEl = elements.find((e) => e.id === sib.svgId)
+                            if (!sibEl) continue
+                            const sx = sibEl.x + sibLocal.x
+                            const sy = sibEl.y + sibLocal.y
+                            const sw = sibLocal.width
+                            const sh = sibLocal.height
+
+                            // 縦方向ガイド（左右エッジの一致）
+                            for (const selX of [wx, wx + ww]) {
+                                for (const sibX of [sx, sx + sw]) {
+                                    if (Math.abs(selX - sibX) <= GUIDE_TOLERANCE) {
+                                        guides.push({
+                                            axis: "v", pos: selX,
+                                            from: Math.min(wy, sy) - GUIDE_PADDING,
+                                            to: Math.max(wy + wh, sy + sh) + GUIDE_PADDING,
+                                        })
+                                    }
+                                }
+                            }
+
+                            // 横方向ガイド（上下エッジの一致）
+                            for (const selY of [wy, wy + wh]) {
+                                for (const sibY of [sy, sy + sh]) {
+                                    if (Math.abs(selY - sibY) <= GUIDE_TOLERANCE) {
+                                        guides.push({
+                                            axis: "h", pos: selY,
+                                            from: Math.min(wx, sx) - GUIDE_PADDING,
+                                            to: Math.max(wx + ww, sx + sw) + GUIDE_PADDING,
+                                        })
+                                    }
+                                }
+                            }
+                        }
+
+                        return (
+                            <>
+                                {guides.map((g, i) => (
+                                    <line
+                                        key={`guide-${i}`}
+                                        className={styles.smartGuide}
+                                        x1={g.axis === "v" ? g.pos : g.from}
+                                        y1={g.axis === "v" ? g.from : g.pos}
+                                        x2={g.axis === "v" ? g.pos : g.to}
+                                        y2={g.axis === "v" ? g.to : g.pos}
+                                    />
+                                ))}
+
+                                {/* バウンディングボックス（青い実線） */}
+                                <rect
+                                    className={styles.layerSelectedOverlay}
+                                    x={wx} y={wy}
+                                    width={ww} height={wh}
+                                />
+
+                                {/* コーナーハンドル（白い四角、4隅） */}
+                                {([
+                                    [wx - hh,      wy - hh     ],
+                                    [wx + ww - hh, wy - hh     ],
+                                    [wx - hh,      wy + wh - hh],
+                                    [wx + ww - hh, wy + wh - hh],
+                                ] as [number, number][]).map(([hx, hy], i) => (
+                                    <rect
+                                        key={`handle-${i}`}
+                                        className={styles.cornerHandle}
+                                        x={hx} y={hy}
+                                        width={hs} height={hs}
+                                    />
+                                ))}
+                            </>
+                        )
+                    })()}
                 </g>
             </svg>
 

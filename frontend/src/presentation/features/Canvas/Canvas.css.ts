@@ -41,7 +41,34 @@ export const element = style({
 export const layerHoverOverlay = style({
     fill: "none",
     stroke: vars.color.accent,
-    strokeWidth: 2,
+    strokeWidth: 1,
+    vectorEffect: "non-scaling-stroke",
+    pointerEvents: "none",
+})
+
+/** 選択中レイヤーのバウンディングボックス（青い実線） */
+export const layerSelectedOverlay = style({
+    fill: "none",
+    stroke: vars.color.accent,
+    strokeWidth: 1.5,
+    vectorEffect: "non-scaling-stroke",
+    pointerEvents: "none",
+})
+
+/** 選択ハンドル（四隅の白い四角。zoom に反比例したサイズで描画） */
+export const cornerHandle = style({
+    fill: "#ffffff",
+    stroke: vars.color.accent,
+    strokeWidth: 1,
+    vectorEffect: "non-scaling-stroke",
+    pointerEvents: "none",
+})
+
+/** スマートガイド（兄弟要素とのエッジ一致を示す青い破線） */
+export const smartGuide = style({
+    stroke: vars.color.accent,
+    strokeWidth: 1,
+    strokeDasharray: "4 3",
     vectorEffect: "non-scaling-stroke",
     pointerEvents: "none",
 })

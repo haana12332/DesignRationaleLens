@@ -63,10 +63,17 @@ export function LayerTreePanel({ layerNodes, selectedLayerNodeId, onSelectLayerN
                 ) : (
                     rows.map(({ node, depth }) => {
                         const selected = node.id === selectedLayerNodeId
+                        const childOfSelected =
+                            selectedLayerNodeId !== null && node.parentId === selectedLayerNodeId
+                        const rowMod = selected
+                            ? styles.nodeRowSelected
+                            : childOfSelected
+                              ? styles.nodeRowChild
+                              : ""
                         return (
                             <div
                                 key={node.id}
-                                className={`${styles.nodeRow} ${selected ? styles.nodeRowSelected : ""}`}
+                                className={`${styles.nodeRow} ${rowMod}`}
                                 style={{ paddingLeft: 12 + depth * 14 }}
                                 onClick={() => onSelectLayerNode(node.id)}
                                 role="button"

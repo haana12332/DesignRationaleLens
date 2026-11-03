@@ -269,9 +269,10 @@ function Canvas({
                         const element = elements.find((e) => e.id === node.svgId)
                         if (!element) return null
 
+                        // ホバー中のみ境界線を表示。選択後は非表示。
                         const isSelected = node.id === selectedLayerNodeId
                         const isHovered = node.id === hoveredLayerNodeId && !isSelected
-                        if (!isSelected && !isHovered) return null
+                        if (!isHovered) return null
 
                         return (
                             <rect
@@ -281,8 +282,8 @@ function Canvas({
                                 width={local.width}
                                 height={local.height}
                                 fill="none"
-                                stroke={isSelected ? "#0d99ff" : "#74c0fc"}
-                                strokeWidth={isSelected ? 2 : 1}
+                                stroke="#74c0fc"
+                                strokeWidth={1}
                                 vectorEffect="non-scaling-stroke"
                                 pointerEvents="none"
                             />

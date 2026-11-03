@@ -213,9 +213,6 @@ function Canvas({
               }
             : {}
 
-    // レイヤーにホバーしているときはカーソルをポインターに
-    const cursor = hoveredLayerNodeId ? "pointer" : "default"
-
     // 選択中レイヤーノードの情報（ラベル描画用）
     const selectedNode = selectedLayerNodeId
         ? layerNodes.find((n) => n.id === selectedLayerNodeId)
@@ -228,8 +225,8 @@ function Canvas({
     return (
         <div
             ref={rootRef}
-            className={styles.root}
-            style={{ ...background, cursor }}
+            className={`${styles.root}${hoveredLayerNodeId ? ` ${styles.rootLayerHovered}` : ""}`}
+            style={background}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
@@ -277,15 +274,11 @@ function Canvas({
                         return (
                             <rect
                                 key={`overlay-${node.id}`}
+                                className={styles.layerHoverOverlay}
                                 x={element.x + local.x}
                                 y={element.y + local.y}
                                 width={local.width}
                                 height={local.height}
-                                fill="none"
-                                stroke="#74c0fc"
-                                strokeWidth={1}
-                                vectorEffect="non-scaling-stroke"
-                                pointerEvents="none"
                             />
                         )
                     })}

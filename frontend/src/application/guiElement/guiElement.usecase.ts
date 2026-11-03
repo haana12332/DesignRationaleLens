@@ -47,7 +47,7 @@ function extractName(svgString: string): string {
     return match?.[1] ?? "GUI成果物"
 }
 
-/** 要素のユースケース一覧 */
+/** 要素のユースケース一覧 **/
 export const guiElementUseCases = {
     selectElementAt,
     pasteGuiArtifact,

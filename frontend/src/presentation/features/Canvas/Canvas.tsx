@@ -56,10 +56,12 @@ function Canvas({
      * クリック・ホバーの対象となるレイヤーノードを選択状態に応じて絞り込む。
      *
      * - 未選択: P_ レベル（parentId === null）のみ
-     * - 選択中: 同じ親を持つ兄弟ノード（同一層）＋ 選択中ノードの直下の子ノード
+     * - 選択中:
+     *     同一層の兄弟ノード（選択中ノード自身は除く）
+     *   ＋ 選択中ノードの直下の子ノード
      *
-     * 同一層の別オブジェクトへはいつでもホバー・選択できる。
-     * さらに選択中オブジェクトの中へ一段階掘り下げることもできる。
+     * 選択中ノード自身を候補に含めると、T_ のない空白エリアをクリックしたとき
+     * 選択中 P_ が返って toggle-deselect となり下位層へ到達できなくなるため除外する。
      */
     const allowedLayerNodes = useMemo(() => {
         if (selectedLayerNodeId === null) {
@@ -69,8 +71,8 @@ function Canvas({
         if (!selectedNode) return []
         return layerNodes.filter(
             (n) =>
-                n.parentId === selectedNode.parentId || // 同一層の兄弟
-                n.parentId === selectedLayerNodeId,     // 一段下の子
+                n.parentId === selectedLayerNodeId ||                                     // 一段下の子
+                (n.parentId === selectedNode.parentId && n.id !== selectedLayerNodeId),   // 同一層の兄弟（自身を除く）
         )
     }, [selectedLayerNodeId, layerNodes])
 

@@ -40,8 +40,8 @@ export const element = style({
 /** ホバー中レイヤーのアウトライン（fill なし、枠線のみ） */
 export const layerHoverOverlay = style({
     fill: "none",
-    stroke: "#74c0fc",
-    strokeWidth: 1,
+    stroke: vars.color.accent,
+    strokeWidth: 2,
     vectorEffect: "non-scaling-stroke",
     pointerEvents: "none",
 })

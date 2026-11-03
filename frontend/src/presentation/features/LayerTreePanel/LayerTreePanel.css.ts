@@ -52,8 +52,8 @@ export const nodeRow = style({
 
 /** 選択中ノード: 少し濃いめの水色 */
 export const nodeRowSelected = style({
-    background: "rgba(13, 153, 255, 0.30)",
-    ":hover": { background: "rgba(13, 153, 255, 0.30)" },
+    background: vars.color.selectedStrongBg,
+    ":hover": { background: vars.color.selectedStrongBg },
 })
 
 /** 選択中ノードの直下子ノード: 現在の水色（vars.color.selectedBg と同値） */

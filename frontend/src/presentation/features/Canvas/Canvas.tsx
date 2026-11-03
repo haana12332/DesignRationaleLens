@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import type { PointerEvent as ReactPointerEvent } from "react"
 
 import type { Offset, Point, Viewport } from "@/domain/canvas"
@@ -46,6 +46,21 @@ function Canvas({
     const rootRef = useRef<HTMLDivElement>(null)
     const dragRef = useRef<DragState | null>(null)
 
+    /**
+     * クリック・ホバーの対象となるレイヤーノードを選択状態に応じて絞り込む。
+     * - 未選択: P_（parentId === null）のみ
+     * - P_ 選択中: その直下の T_ 子ノードのみ
+     * - T_/O_/M_ 選択中: その直下の子ノードのみ
+     * 階層を一段ずつ降りる Figma 的な操作感を実現する。
+     */
+    const allowedLayerNodes = useMemo(
+        () =>
+            selectedLayerNodeId === null
+                ? layerNodes.filter((n) => n.parentId === null)
+                : layerNodes.filter((n) => n.parentId === selectedLayerNodeId),
+        [selectedLayerNodeId, layerNodes],
+    )
+
     // ホバー中のレイヤーノード ID（ドラッグ中は null）
     const [hoveredLayerNodeId, setHoveredLayerNodeId] = useState<string | null>(null)
     // 連続した pointermove で setState を最小限に抑えるための前回値
@@ -88,7 +103,7 @@ function Canvas({
         let bestId: string | null = null
         let bestArea = Infinity
 
-        for (const node of layerNodes) {
+        for (const node of allowedLayerNodes) {
             const local = layerBBoxes.get(node.id)
             if (!local) continue
             const element = elements.find((e) => e.id === node.svgId)
@@ -169,9 +184,18 @@ function Canvas({
         dragRef.current = null
 
         if (drag && !drag.moved && event.type === "pointerup") {
-            // クリック: その位置のレイヤーを選択、なければ選択解除
             const world = screenToWorld(toScreen(event), viewport)
-            onSelectLayerNode(findLayerAtPoint(world))
+            const hitId = findLayerAtPoint(world)
+
+            if (hitId !== null) {
+                // 許容レイヤーにヒット → 1段階掘り下げて選択
+                onSelectLayerNode(hitId)
+            } else if (selectedLayerNodeId !== null) {
+                // ヒットなし・かつ選択中 → 1段階上（親）に戻る
+                const currentNode = layerNodes.find((n) => n.id === selectedLayerNodeId)
+                onSelectLayerNode(currentNode?.parentId ?? null)
+            }
+            // 未選択 + ヒットなし: 何もしない（P_ のない空白をクリックした場合）
         }
     }
 

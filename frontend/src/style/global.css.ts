@@ -4,7 +4,7 @@ import { vars } from "./theme.css"
 
 globalStyle(':root', {
     font: "14px/1.4 system-ui, 'Segoe UI', Roboto, sans-serif",
-    colorScheme: 'light dark',
+    colorScheme: 'dark',
     color: vars.color.text,
 })
 

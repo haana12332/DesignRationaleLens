@@ -9,4 +9,8 @@ export type GuiElement = {
     y: number
     width: number
     height: number
+    /** サニタイズ済みの SVG 文字列（キャンバス描画用）。SVG 成果物のみ持つ */
+    svgContent?: string
+    /** 貼り付け時のオリジナル SVG 文字列（将来の Atomic Design 解析用）。SVG 成果物のみ持つ */
+    rawSvgContent?: string
 }

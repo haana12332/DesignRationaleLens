@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import path from 'node:path'
 import react from '@vitejs/plugin-react'
 import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
@@ -6,6 +7,10 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), vanillaExtractPlugin()],
+  test: {
+    // DOMParser / XMLSerializer を使うためブラウザ相当の環境で実行する
+    environment: 'jsdom',
+  },
   resolve: {
     // tsconfig.app.json の "@/*" と合わせる
     alias: { '@': path.resolve(__dirname, 'src') },

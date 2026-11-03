@@ -2,7 +2,10 @@ import { style } from "@vanilla-extract/css"
 
 import { vars } from "@/style/theme.css"
 
+// ---- グリッドドットの色（JS 側で backgroundImage を組み立てるために export） ----
 export const dotColor = vars.color.canvasDot
+
+// ---- レイアウト ----
 
 export const root = style({
     position: "absolute",
@@ -14,6 +17,9 @@ export const root = style({
     cursor: "default",
 })
 
+/** レイヤーにホバーしているときのカーソル */
+export const rootLayerHovered = style({ cursor: "pointer" })
+
 export const svg = style({
     position: "absolute",
     inset: 0,
@@ -22,11 +28,52 @@ export const svg = style({
     display: "block",
 })
 
+// ---- SVG 要素 ----
+
+/** svgContent のない GUI 成果物のフォールバック矩形 */
 export const element = style({
     fill: vars.color.panelBg,
     stroke: vars.color.border,
     strokeWidth: 1,
 })
+
+/** ホバー中レイヤーのアウトライン（fill なし、枠線のみ） */
+export const layerHoverOverlay = style({
+    fill: "none",
+    stroke: vars.color.accent,
+    strokeWidth: 1,
+    vectorEffect: "non-scaling-stroke",
+    pointerEvents: "none",
+})
+
+/** 選択中レイヤーのバウンディングボックス（青い実線） */
+export const layerSelectedOverlay = style({
+    fill: "none",
+    stroke: vars.color.accent,
+    strokeWidth: 1.5,
+    vectorEffect: "non-scaling-stroke",
+    pointerEvents: "none",
+})
+
+/** 選択ハンドル（四隅の白い四角。zoom に反比例したサイズで描画） */
+export const cornerHandle = style({
+    fill: "#ffffff",
+    stroke: vars.color.accent,
+    strokeWidth: 1,
+    vectorEffect: "non-scaling-stroke",
+    pointerEvents: "none",
+})
+
+/** スマートガイド（兄弟要素とのエッジ一致を示す青い破線） */
+export const smartGuide = style({
+    stroke: vars.color.accent,
+    strokeWidth: 1,
+    strokeDasharray: "4 3",
+    vectorEffect: "non-scaling-stroke",
+    pointerEvents: "none",
+})
+
+// ---- ラベル ----
 
 export const label = style({
     position: "absolute",
@@ -38,14 +85,13 @@ export const label = style({
     pointerEvents: "none",
 })
 
-export const labelSelected = style({ color: vars.color.accent })
-
-export const selection = style({
-    position: "absolute",
-    boxSizing: "border-box",
-    border: `1.5px solid ${vars.color.accent}`,
-    pointerEvents: "none",
+/** ホバー中 or 選択中 Page のラベル（青く光る） */
+export const labelActive = style({
+    color: vars.color.accent,
+    textShadow: `0 0 8px ${vars.color.accent}`,
 })
+
+// ---- UI パーツ ----
 
 export const zoom = style({
     position: "absolute",

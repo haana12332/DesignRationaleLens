@@ -8,10 +8,10 @@ import { parseLayerTree } from '@/domain/layerTree'
 
 /**
  * SVG 文字列を受け取り、Atomic Design の層ノードツリーを構築する。
+ * svgId には対応する GuiElement.id を渡すことで、ノードと描画要素を紐付ける。
  * 命名規則違反がある場合はエラー一覧を返し、取り込みを中止する。
  */
-export function importLayerTree(svgString: string): ParseResult {
-    const svgId = crypto.randomUUID()
+export function importLayerTree(svgString: string, svgId: string): ParseResult {
     return parseLayerTree(svgString, svgId)
 }
 

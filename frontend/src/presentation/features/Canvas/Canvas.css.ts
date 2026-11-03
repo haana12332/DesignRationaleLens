@@ -58,6 +58,14 @@ export const label = style({
     pointerEvents: "none",
 })
 
+/** ホバー中レイヤーのラベル */
+export const labelHovered = style({
+    color: vars.color.accent,
+    background: 'rgba(24, 160, 251, 0.12)',
+    padding: '1px 5px',
+    borderRadius: 3,
+})
+
 /** 選択中レイヤーのラベル */
 export const labelSelected = style({ color: vars.color.accent })
 

@@ -222,6 +222,15 @@ function Canvas({
         ? elements.find((e) => e.id === selectedNode.svgId)
         : null
 
+    // ホバー中レイヤーノードの情報（ラベル描画用）
+    const hoveredNode = hoveredLayerNodeId
+        ? layerNodes.find((n) => n.id === hoveredLayerNodeId)
+        : null
+    const hoveredLocalBbox = hoveredNode ? layerBBoxes.get(hoveredNode.id) : null
+    const hoveredElement = hoveredNode
+        ? elements.find((e) => e.id === hoveredNode.svgId)
+        : null
+
     return (
         <div
             ref={rootRef}
@@ -298,6 +307,23 @@ function Canvas({
                     </span>
                 )
             })}
+
+            {/* ホバー中レイヤーのラベル（オーバーレイ左上に表示） */}
+            {hoveredNode && hoveredLocalBbox && hoveredElement && (() => {
+                const screenPos = worldToScreen(
+                    { x: hoveredElement.x + hoveredLocalBbox.x, y: hoveredElement.y + hoveredLocalBbox.y },
+                    viewport,
+                )
+                return (
+                    <span
+                        key={`label-hovered-${hoveredNode.id}`}
+                        className={`${styles.label} ${styles.labelHovered}`}
+                        style={{ left: screenPos.x, top: screenPos.y }}
+                    >
+                        {hoveredNode.figmaId}
+                    </span>
+                )
+            })()}
 
             {/* 選択中レイヤーのラベル（オーバーレイ左上に青で表示） */}
             {selectedNode && selectedLocalBbox && selectedElement && (() => {

@@ -9,6 +9,7 @@ import Canvas from "@/presentation/features/Canvas"
 import { LayerTreePanel } from "@/presentation/features/LayerTreePanel"
 import { RationalePanel } from "@/presentation/features/RationalePanel"
 import useEditor from "@/presentation/hooks/useEditor"
+import { useLayerBBoxes } from "@/presentation/hooks/useLayerBBoxes"
 
 type Props = {
     canvasUseCases: CanvasUseCases
@@ -19,6 +20,7 @@ type Props = {
 /** 設計ページ（/design/:verification_id）。インポートした GUI 成果物を配置する無限キャンバス */
 export function DesignPage({ canvasUseCases, guiElementUseCases, layerTreeUseCases }: Props) {
     const editor = useEditor(canvasUseCases, guiElementUseCases, layerTreeUseCases)
+    const layerBBoxes = useLayerBBoxes(editor.elements, editor.layerNodes)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     function handleImportClick() {
@@ -68,11 +70,13 @@ export function DesignPage({ canvasUseCases, guiElementUseCases, layerTreeUseCas
                 <Canvas
                     viewport={editor.viewport}
                     elements={editor.elements}
-                    selectedId={editor.selectedId}
+                    layerNodes={editor.layerNodes}
+                    layerBBoxes={layerBBoxes}
+                    selectedLayerNodeId={editor.selectedLayerNodeId}
                     onPan={editor.pan}
                     onZoom={editor.zoomAt}
-                    onSelectAt={editor.selectAt}
                     onMoveElement={editor.moveElement}
+                    onSelectLayerNode={editor.selectLayerNode}
                 />
 
                 {/* インポートエラートースト（4 秒で自動消去） */}

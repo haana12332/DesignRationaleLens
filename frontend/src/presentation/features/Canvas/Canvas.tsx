@@ -54,18 +54,25 @@ function Canvas({
 
     /**
      * クリック・ホバーの対象となるレイヤーノードを選択状態に応じて絞り込む。
-     * - 未選択: P_（parentId === null）のみ
-     * - P_ 選択中: その直下の T_ 子ノードのみ
-     * - T_/O_/M_ 選択中: その直下の子ノードのみ
-     * 階層を一段ずつ降りる Figma 的な操作感を実現する。
+     *
+     * - 未選択: P_ レベル（parentId === null）のみ
+     * - 選択中: 同じ親を持つ兄弟ノード（同一層）＋ 選択中ノードの直下の子ノード
+     *
+     * 同一層の別オブジェクトへはいつでもホバー・選択できる。
+     * さらに選択中オブジェクトの中へ一段階掘り下げることもできる。
      */
-    const allowedLayerNodes = useMemo(
-        () =>
-            selectedLayerNodeId === null
-                ? layerNodes.filter((n) => n.parentId === null)
-                : layerNodes.filter((n) => n.parentId === selectedLayerNodeId),
-        [selectedLayerNodeId, layerNodes],
-    )
+    const allowedLayerNodes = useMemo(() => {
+        if (selectedLayerNodeId === null) {
+            return layerNodes.filter((n) => n.parentId === null)
+        }
+        const selectedNode = layerNodes.find((n) => n.id === selectedLayerNodeId)
+        if (!selectedNode) return []
+        return layerNodes.filter(
+            (n) =>
+                n.parentId === selectedNode.parentId || // 同一層の兄弟
+                n.parentId === selectedLayerNodeId,     // 一段下の子
+        )
+    }, [selectedLayerNodeId, layerNodes])
 
     // ホバー中のレイヤーノード ID（ドラッグ中は null）
     const [hoveredLayerNodeId, setHoveredLayerNodeId] = useState<string | null>(null)

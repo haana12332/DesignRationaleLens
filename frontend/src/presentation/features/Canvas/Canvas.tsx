@@ -213,24 +213,6 @@ function Canvas({
               }
             : {}
 
-    // 選択中レイヤーノードの情報（ラベル描画用）
-    const selectedNode = selectedLayerNodeId
-        ? layerNodes.find((n) => n.id === selectedLayerNodeId)
-        : null
-    const selectedLocalBbox = selectedNode ? layerBBoxes.get(selectedNode.id) : null
-    const selectedElement = selectedNode
-        ? elements.find((e) => e.id === selectedNode.svgId)
-        : null
-
-    // ホバー中レイヤーノードの情報（ラベル描画用）
-    const hoveredNode = hoveredLayerNodeId
-        ? layerNodes.find((n) => n.id === hoveredLayerNodeId)
-        : null
-    const hoveredLocalBbox = hoveredNode ? layerBBoxes.get(hoveredNode.id) : null
-    const hoveredElement = hoveredNode
-        ? elements.find((e) => e.id === hoveredNode.svgId)
-        : null
-
     return (
         <div
             ref={rootRef}
@@ -294,53 +276,24 @@ function Canvas({
                 </g>
             </svg>
 
-            {/* GUI 成果物のラベル（左上に薄く表示） */}
             {elements.map((element) => {
                 const pos = worldToScreen(element, viewport)
+                // ホバー中または選択中のレイヤーノードがこの element に属していれば active
+                const isActive =
+                    (hoveredLayerNodeId !== null &&
+                        layerNodes.find((n) => n.id === hoveredLayerNodeId)?.svgId === element.id) ||
+                    (selectedLayerNodeId !== null &&
+                        layerNodes.find((n) => n.id === selectedLayerNodeId)?.svgId === element.id)
                 return (
                     <span
                         key={element.id}
-                        className={styles.label}
+                        className={`${styles.label}${isActive ? ` ${styles.labelActive}` : ""}`}
                         style={{ left: pos.x, top: pos.y }}
                     >
                         {element.name}
                     </span>
                 )
             })}
-
-            {/* ホバー中レイヤーのラベル（オーバーレイ左上に表示） */}
-            {hoveredNode && hoveredLocalBbox && hoveredElement && (() => {
-                const screenPos = worldToScreen(
-                    { x: hoveredElement.x + hoveredLocalBbox.x, y: hoveredElement.y + hoveredLocalBbox.y },
-                    viewport,
-                )
-                return (
-                    <span
-                        key={`label-hovered-${hoveredNode.id}`}
-                        className={`${styles.label} ${styles.labelHovered}`}
-                        style={{ left: screenPos.x, top: screenPos.y }}
-                    >
-                        {hoveredNode.figmaId}
-                    </span>
-                )
-            })()}
-
-            {/* 選択中レイヤーのラベル（オーバーレイ左上に青で表示） */}
-            {selectedNode && selectedLocalBbox && selectedElement && (() => {
-                const screenPos = worldToScreen(
-                    { x: selectedElement.x + selectedLocalBbox.x, y: selectedElement.y + selectedLocalBbox.y },
-                    viewport,
-                )
-                return (
-                    <span
-                        key={`label-${selectedNode.id}`}
-                        className={`${styles.label} ${styles.labelSelected}`}
-                        style={{ left: screenPos.x, top: screenPos.y }}
-                    >
-                        {selectedNode.figmaId}
-                    </span>
-                )
-            })()}
 
             <span className={styles.zoom}>{Math.round(viewport.zoom * 100)}%</span>
         </div>
